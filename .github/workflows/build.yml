@@ -22,7 +22,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: zmkfirmware/zmk-build-arm:stable
+      image: zmkfirmware/zmk-build-arm:3.5  # <-- Changed from stable to 3.5 to natively fix the Python bug
     needs: matrix
     name: Build
     strategy:
@@ -62,8 +62,6 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - name: Install missing Python dependencies
-        run: pip3 install setuptools
       - name: West Init
         run: west init -l config
       - name: West Update
