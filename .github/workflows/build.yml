@@ -1,5 +1,4 @@
 on: [push, pull_request, workflow_dispatch]
-
 name: Build
 
 jobs:
@@ -10,7 +9,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install yaml2json
         run: python3 -m pip install remarshal
       - id: set-matrix
@@ -18,7 +17,8 @@ jobs:
         run: |
           matrix=$(yaml2json build.yaml | jq -c .)
           yaml2json build.yaml
-          echo "::set-output name=matrix::${matrix}"
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+
   build:
     runs-on: ubuntu-latest
     container:
@@ -41,11 +41,11 @@ jobs:
             DISPLAY_NAME="${{ matrix.board }}"
             ARTIFACT_NAME="${{ matrix.board }}-zmk"
           fi
-          echo ::set-output name=extra-cmake-args::${EXTRA_CMAKE_ARGS}
-          echo ::set-output name=artifact-name::${ARTIFACT_NAME}
-          echo ::set-output name=display-name::${DISPLAY_NAME}
+          echo "extra-cmake-args=${EXTRA_CMAKE_ARGS}" >> $GITHUB_OUTPUT
+          echo "artifact-name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+          echo "display-name=${DISPLAY_NAME}" >> $GITHUB_OUTPUT
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Cache west modules
         uses: actions/cache@v4
         env:
@@ -62,6 +62,8 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+      - name: Install missing Python dependencies
+        run: pip3 install setuptools
       - name: West Init
         run: west init -l config
       - name: West Update
@@ -81,16 +83,13 @@ jobs:
       - name: Rename artifacts
         run: |
           mkdir build/artifacts
-          if [ -f build/zephyr/zmk.uf2 ]
-          then
+          if [ -f build/zephyr/zmk.uf2 ]          then
             cp build/zephyr/zmk.uf2 "build/artifacts/${{ steps.variables.outputs.artifact-name }}.uf2"
-          elif [ -f build/zephyr/zmk.hex ]
-          then
+          elif [ -f build/zephyr/zmk.hex ]          then
             cp build/zephyr/zmk.hex "build/artifacts/${{ steps.variables.outputs.artifact-name }}.hex"
           fi
       - name: Archive (${{ steps.variables.outputs.display-name }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: firmware-${{ matrix.board }}
           path: build/artifacts
-
