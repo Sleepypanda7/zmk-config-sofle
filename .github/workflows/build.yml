@@ -22,7 +22,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: zmkfirmware/zmk-build-arm:stable
+      image: zmkfirmware/zmk-build-arm:v2.5
     needs: matrix
     name: Build
     strategy:
@@ -62,10 +62,6 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - name: Fix Python distutils dependency
-        run: |
-          apt-get update
-          apt-get install -y python3-setuptools
       - name: West Init
         run: west init -l config
       - name: West Update
@@ -85,9 +81,9 @@ jobs:
       - name: Rename artifacts
         run: |
           mkdir build/artifacts
-          if [ -f build/zephyr/zmk.uf2 ]          then
+          if [ -f build/zephyr/zmk.uf2 ]; then
             cp build/zephyr/zmk.uf2 "build/artifacts/${{ steps.variables.outputs.artifact-name }}.uf2"
-          elif [ -f build/zephyr/zmk.hex ]          then
+          elif [ -f build/zephyr/zmk.hex ]; then
             cp build/zephyr/zmk.hex "build/artifacts/${{ steps.variables.outputs.artifact-name }}.hex"
           fi
       - name: Archive (${{ steps.variables.outputs.display-name }})
