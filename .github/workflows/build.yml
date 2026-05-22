@@ -94,7 +94,3 @@ jobs:
           name: firmware
           path: build/artifacts
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
